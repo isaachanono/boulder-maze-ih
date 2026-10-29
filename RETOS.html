@@ -1,0 +1,67 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Retos · boulder-maze</title>
+<meta name="description" content="Retos del workshop de Devin Desktop para el repo boulder-maze. Elige un reto y abre su guía.">
+<style>
+:root{--bg:#0c0e14;--panel:#141826;--line:#2a3150;--fg:#e9ecf5;--mut:#8b93ad;--gold:#ffd54a;--blue:#5aa2ff;--green:#5ad689}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:48px 48px;background-position:center}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 20%,var(--bg) 78%);pointer-events:none}
+main{position:relative;width:min(680px,92vw);padding:56px 0 64px;text-align:center}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#ffffff14;border:1px solid var(--line);border-radius:4px;padding:0 .3em;font-size:.88em}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.pellets{display:flex;gap:14px;justify-content:center;margin-bottom:18px}
+.pellets i{width:10px;height:10px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--gold)}
+.pellets i:nth-child(3){width:16px;height:16px;margin-top:-3px}
+h1{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(2.2rem,7vw,3.4rem);letter-spacing:.14em;margin:0;color:var(--gold);text-shadow:0 0 24px #ffd54a55}
+.sub{color:var(--mut);margin:10px 0 8px;font-size:.95rem}
+.lede{color:var(--mut);margin:0 auto 34px;max-width:46ch}
+ol{list-style:none;margin:0;padding:0;text-align:left;display:grid;gap:14px}
+li.c{position:relative}
+li.c label{display:flex;align-items:center;gap:18px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;cursor:pointer;transition:border-color .15s,transform .15s}
+li.c label:hover{border-color:var(--gold);transform:translateY(-1px)}
+li.c input{position:absolute;opacity:0;pointer-events:none}
+.box{flex:none;width:34px;height:34px;border:2px solid var(--line);border-radius:9px;display:grid;place-items:center;transition:all .15s}
+.box svg{width:20px;height:20px;stroke:var(--bg);stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round;opacity:0;transform:scale(.4);transition:all .15s}
+li.c input:checked~.box{background:var(--green);border-color:var(--green)}
+li.c input:checked~.box svg{opacity:1;transform:scale(1)}
+.txt{flex:1;min-width:0}
+.txt .n{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.72rem;letter-spacing:.18em;color:var(--mut);text-transform:uppercase}
+.txt .t{display:block;font-size:1.25rem;font-weight:650;line-height:1.3;margin:2px 0 3px}
+.txt .m{color:var(--mut);font-size:.85rem}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:0 9px;margin-right:6px;font-size:.75rem;color:var(--blue)}
+li.c input:checked~.txt .t{color:var(--mut);text-decoration:line-through;text-decoration-color:var(--green)}
+.go{flex:none;color:var(--mut);font-size:1.3rem;transition:all .15s}
+li.c label:hover .go{color:var(--gold);transform:translateX(3px)}
+footer{margin-top:40px;color:var(--mut);font-size:.85rem}
+footer p{margin:6px 0}
+.done{position:fixed;left:0;right:0;bottom:0;text-align:center;padding:10px;background:#5ad68918;border-top:1px solid var(--green);color:var(--green);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.85rem;letter-spacing:.12em;opacity:0;pointer-events:none;transition:opacity .3s}
+.done.on{opacity:1}
+</style></head><body>
+<div class="done" id="done">★ TODOS LOS RETOS COMPLETOS ★</div>
+<main>
+<div class="pellets"><i></i><i></i><i></i><i></i><i></i></div>
+<h1>BOULDER&nbsp;MAZE</h1>
+<p class="sub">Devin Desktop Workshop · Mexico Tech Week</p>
+<p class="lede">Un laberinto estilo Pac-Man, una simulación determinista y cuatro retos. Marca los que completes; cada uno abre su guía detallada.</p>
+<ol>
+<li class="c"><label><input type="checkbox" data-k="r1"><span class="box"><svg viewBox="0 0 24 24"><path d="M4 12.5 10 18.5 20 6.5"/></svg></span><a class="txt" href="RETOS-GUIA.html#r1"><span class="n">Reto 1</span><span class="t">Guardar y cargar partidas</span><span class="m"><span class="tag">Core</span>15–20 min · Plan mode · Determinismo</span></a><span class="go">→</span></label></li>
+<li class="c"><label><input type="checkbox" data-k="r2"><span class="box"><svg viewBox="0 0 24 24"><path d="M4 12.5 10 18.5 20 6.5"/></svg></span><a class="txt" href="RETOS-GUIA.html#r2"><span class="n">Reto 2</span><span class="t">Niveles generados proceduralmente</span><span class="m"><span class="tag">Core</span>15–25 min · Algoritmo · Tests de propiedades</span></a><span class="go">→</span></label></li>
+<li class="c"><label><input type="checkbox" data-k="r3"><span class="box"><svg viewBox="0 0 24 24"><path d="M4 12.5 10 18.5 20 6.5"/></svg></span><a class="txt" href="RETOS-GUIA.html#r3"><span class="n">Reto 3</span><span class="t">Dos frentes: sonido y récord</span><span class="m"><span class="tag">Paralelo</span>20–25 min · Worktree · Quick Review · Merge</span></a><span class="go">→</span></label></li>
+<li class="c"><label><input type="checkbox" data-k="r4"><span class="box"><svg viewBox="0 0 24 24"><path d="M4 12.5 10 18.5 20 6.5"/></svg></span><a class="txt" href="RETOS-GUIA.html#r4"><span class="n">Reto 4 · Jefe</span><span class="t">Co-op local, dos jugadores</span><span class="m"><span class="tag">Jefe</span>25–35 min · Megaplan · Core + web</span></a><span class="go">→</span></label></li>
+</ol>
+<footer>
+<p>Ruta sugerida (~60 min): 1 o 2, y luego 3. Si vas rápido, el jefe.</p>
+<p><a href="RETOS-GUIA.html">Guía completa</a> con instalación, reglas, pistas y trampas conocidas.</p>
+</footer>
+</main>
+<script>
+var boxes=document.querySelectorAll('input[data-k]'),done=document.getElementById('done'),store;
+try{store=JSON.parse(localStorage.getItem('retos-boulder-maze')||'{}')}catch(e){store={}}
+function save(){var o={};boxes.forEach(function(b){if(b.checked)o[b.dataset.k]=1});try{localStorage.setItem('retos-boulder-maze',JSON.stringify(o))}catch(e){}
+var all=[].every.call(boxes,function(b){return b.checked});done.classList.toggle('on',all)}
+boxes.forEach(function(b){b.checked=!!store[b.dataset.k];b.addEventListener('change',save)});
+save();
+</script></body></html>

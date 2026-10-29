@@ -1,0 +1,241 @@
+<!doctype html><html lang="es-MX"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guía de retos · boulder-maze</title>
+<meta name="description" content="Retos del workshop de Devin Desktop para el repo boulder-maze (TypeScript, Phaser, simulación determinista).">
+<style>
+:root{--bg:#fff;--fg:#1a1a1a;--mut:#666;--line:#ddd;--box:#f6f6f6;--link:#0b57d0;color-scheme:light dark}
+@media(prefers-color-scheme:dark){:root{--bg:#111;--fg:#e8e8e8;--mut:#9a9a9a;--line:#333;--box:#1b1b1b;--link:#7fb0ff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:720px;margin:0 auto;padding:40px 20px 80px}
+a{color:var(--link)}
+h1{font-size:2rem;line-height:1.2;margin:0 0 4px}
+h2{font-size:1.4rem;line-height:1.3;margin:0 0 4px}
+h3{font-size:1rem;margin:28px 0 6px}
+.sub{color:var(--mut);margin:0 0 20px}
+.meta{color:var(--mut);font-size:.9rem;margin:0 0 14px}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{background:var(--box);border:1px solid var(--line);border-radius:3px;padding:0 .3em;font-size:.88em}
+pre{margin:0;background:var(--box);border:1px solid var(--line);border-radius:6px;padding:12px 14px;overflow-x:auto;white-space:pre-wrap;word-break:break-word;font-size:.85rem;line-height:1.5}
+pre.p{font-family:inherit;font-size:.95rem}
+.box{position:relative;margin:8px 0}
+.copy{position:absolute;top:6px;right:6px;font:inherit;font-size:.75rem;color:var(--mut);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:2px 8px;cursor:pointer}
+.box pre{padding-right:70px}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+ul,ol{padding-left:1.3em}
+li{margin:.3em 0}
+ul.check{list-style:none;padding:0}
+ul.check li label{display:flex;gap:8px;align-items:flex-start}
+ul.check input{margin-top:.4em;flex:none}
+ul.check .box{margin:4px 0 8px 24px}
+details{margin:6px 0}
+summary{cursor:pointer;color:var(--mut)}
+details>div,details>ul{margin-top:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two>div{border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.two b{display:block;margin-bottom:4px}
+.note{border-left:3px solid var(--line);padding:2px 0 2px 12px;color:var(--mut)}
+@media(max-width:600px){.two{grid-template-columns:1fr}}
+</style></head><body><main>
+<p class="meta"><a href="RETOS.html">← Retos</a></p>
+<h1>Guía de retos</h1><p class="sub">Devin Desktop Workshop · Mexico Tech Week · <code>boulder-maze</code></p>
+<p>Un laberinto estilo Pac-Man con una simulación pura y determinista a 60 ticks por segundo (<code>packages/core</code>) y un front-end de Phaser que solo dibuja (<code>apps/web</code>). Tiene reglas serias y buenas pruebas, así que los retos tratan de <b>cambiar las reglas sin romperlas</b>. Hay cuatro retos; no tienes que hacerlos todos.</p>
+<h3>Cómo trabajar cada reto</h3><p>Entiende (dale contexto con @-menciones), planea (Plan mode), actúa (Implement) y verifica (tests, Quick Review, Merge).</p>
+<hr><h2>Antes de empezar</h2>
+<p>Necesitas <b>Node 22.12 o más nuevo</b> (el repo recomienda Node 24; <code>nvm use</code> lo toma de <code>.nvmrc</code>).</p>
+<div class="box"><button type="button" class="copy">Copiar</button><pre>npm install
+npx playwright install chromium   # solo si vas a correr los tests e2e (necesita red una vez)</pre></div>
+<p style="margin-top:12px">Comandos que vas a usar todo el taller:</p>
+<ul>
+<li><code>npm run dev</code> abre el juego en el navegador.</li>
+<li><code>npm test</code> corre las pruebas del núcleo (Vitest). Hoy son <b>55</b>, aunque el README diga 40.</li>
+<li><code>npm run typecheck</code> revisa los tipos de todo el repo.</li>
+<li><code>npm run validate</code> valida el laberinto. <code>npm run smoke</code> corre 1,200 ticks en Node, sin navegador.</li>
+<li><code>npm run test:e2e</code> corre Playwright contra un navegador real.</li>
+</ul>
+<p>Controles: flechas o WASD para moverte, <kbd>P</kbd> o <kbd>Esc</kbd> para pausar. Un solo toque de boulder sin drill y pierdes.</p>
+
+<h3>Reglas</h3><ol><li>Empieza cada reto en <b>Plan mode</b>. Lee el plan, corrígelo y solo entonces aprieta Implement.</li><li>En este repo una frase manda: **toda decisión de juego vive en <code>packages/core</code>**. La web solo presenta estado y manda intención de input. Si Devin pone reglas en Phaser, párale.</li><li>Las decisiones de diseño son tuyas. Si Devin asume algo que no te gusta, dilo en el plan, no después.</li><li>Una sesión por reto. Para el reto Paralelo usa <b>Worktree</b> y revisa con <b>Quick Review</b> antes del Merge.</li><li>Que Devin corra <code>npm test</code>, <code>npm run typecheck</code> y te enseñe la salida. Los 55 tests existentes deben seguir verdes, salvo que el plan justifique cambiar alguno.</li></ol>
+<h3>Ojo con esto</h3><ul><li><code>npm run typecheck</code> en un checkout recién clonado puede fallar con errores <code>TS2307</code> sobre <code>@boulder-maze/core</code>. La web consume el núcleo desde <code>dist/</code>: corre primero <code>npm run build</code>.</li><li>Un Worktree nuevo **no trae <code>node_modules</code>** (está en <code>.gitignore</code>). Corre <code>npm install</code> dentro del Worktree antes de probar nada.</li><li>Los tests e2e usan el puerto 5199 y reusan un servidor que ya esté ahí. Córrelos <b>de uno en uno</b>; si dos sesiones los corren a la vez, una prueba el código de la otra.</li><li>La primera corrida de e2e puede fallar por timeout en el arranque en frío de Vite. Repite una vez antes de culpar al cambio.</li><li>Posiciones y velocidades son <b>enteros</b> (60 unidades por tile). Un valor fraccionario rompe una regla del núcleo sin que nadie se queje al principio.</li></ul>
+<hr><h2>Retos</h2><p><b>Ruta sugerida (~60 min):</b> 1 o 2, y luego 3. Si vas rápido, 4: alcanza con terminar el Nivel 1.</p><ol>
+<li><a href="#r1">Guardar y cargar</a> <span class="meta">(Core, 15–20 min)</span></li>
+<li><a href="#r2">Niveles procedurales</a> <span class="meta">(Core, 15–25 min)</span></li>
+<li><a href="#r3">Sonido y récord</a> <span class="meta">(Paralelo, 20–25 min)</span></li>
+<li><a href="#r4">Co-op local</a> <span class="meta">(Jefe, 25–35 min)</span></li>
+</ol>
+<hr>
+<section id="r1">
+<h2>Reto 1 · Guardar y cargar partidas</h2>
+<p class="meta">Core · 15–20 min · Plan mode, Determinismo, Vitest + e2e</p>
+<p>El núcleo ya sabe serializarse. Ponle una capa de guardado con validación y úsala desde la web.</p>
+<h3>La misión</h3>
+<p>El juego guarda la partida y luego la carga y continúa. El núcleo ya tiene <code>serializeGame</code> y <code>deserializeGame</code>, pero eso no es un sistema de guardado: faltan versión de formato, validación y una capa fina en la web.</p>
+<p>La prueba que importa es de <b>determinismo</b>: guardar en el tick N, restaurar y avanzar K ticks debe dar exactamente el mismo estado que la corrida sin interrupción.</p>
+<h3>Una ayudita para arrancar</h3>
+<p class="meta">Es solo el comienzo. Escribe tu propio prompt y complétalo con lo que pide la misión.</p>
+<div class="box"><button type="button" class="copy">Copiar</button><pre class="p">Quiero guardar y cargar partidas. Revisa @packages/core/src/sim.ts y @apps/web/src/session/LocalGameSession.ts y propón en Plan mode qué se guarda y cómo se valida al cargar.</pre></div>
+<h3>Lo que tú decides</h3><ul>
+<li>¿Qué lleva el guardado? ¿Todo el estado (incluyendo el mapa) o solo lo dinámico? ¿Versión de formato, <code>mapId</code>, <code>mapVersion</code>?</li>
+<li>¿En qué fases se puede guardar? ¿Y cargar? Piensa en &quot;ready&quot;, pausa, &quot;won&quot; y &quot;lost&quot;.</li>
+<li>¿Cómo reaccionas a un guardado de otra versión: rechazar con mensaje o migrar?</li>
+<li>¿Dónde vive: un slot en <code>localStorage</code>, varios slots, o un archivo JSON? ¿Con qué teclas o botones?</li>
+<li>Al cargar, ¿la partida se reanuda o queda en pausa?</li>
+</ul>
+<h3>¿Cómo sabes que terminó?</h3><ul class="check">
+<li><label><input type="checkbox"><span><code>npm test</code> pasa y hay tests nuevos para guardar y cargar (más de los 55 actuales).</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm test</pre></div></li>
+<li><label><input type="checkbox"><span>Hay un test de determinismo: guardar en el tick N, restaurar, avanzar K ticks, y <code>serializeGame</code> del restaurado es <b>igual</b> al de la corrida continua.</span></label></li>
+<li><label><input type="checkbox"><span>Cargar basura (<code>{nope</code>, <code>null</code>, otra versión, otro mapa) devuelve un error claro y <b>no</b> truena.</span></label></li>
+<li><label><input type="checkbox"><span>En el navegador: guarda, recarga la página, carga, y la partida sigue donde estaba, <b>en pausa</b> y respondiendo al teclado.</span></label></li>
+<li><label><input type="checkbox"><span><code>npm run build</code> y luego <code>npm run typecheck</code> pasan sin errores.</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm run build &amp;&amp; npm run typecheck</pre></div></li>
+<li><label><input type="checkbox"><span>Los tests e2e, los viejos y los nuevos, pasan.</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm run test:e2e</pre></div></li>
+</ul>
+<h3>Archivos que vas a ver</h3><p><code>packages/core/src/save.ts (nuevo)</code> <code>packages/core/src/index.ts</code> <code>packages/core/test/save.test.ts (nuevo)</code> <code>apps/web/src/session/LocalGameSession.ts</code> <code>apps/web/src/main.ts</code> <code>apps/web/e2e/save.spec.ts (nuevo)</code></p>
+<h3>Si te atoras</h3>
+<details><summary>Pista 1</summary><div>Piensa en dos capas: una función pura en <code>packages/core</code> que convierte el estado a texto (y de vuelta) con validación, sin tocar el DOM ni <code>localStorage</code>; y una capa fina en <code>apps/web</code> que solo guarda el texto.</div></details>
+<details><summary>Pista 2</summary><div>Al restaurar en <code>LocalGameSession</code> no basta con asignar el estado: revisa qué otros campos privados de la sesión (acumulador, dirección deseada, eventos pendientes, contador de secuencia de comandos) quedan desfasados. Un contador de secuencia en 0 hace que el núcleo rechace los comandos nuevos.</div></details>
+<details><summary>Pista 3</summary><div>Envuelve el estado en un sobre con <code>formatVersion</code>, <code>mapId</code> y <code>mapVersion</code>, y haz que <code>loadGame</code> devuelva un resultado ok/error en vez de lanzar.</div></details>
+<details><summary>Trampas conocidas (al final)</summary><ul>
+<li>Después de cargar, el jugador no responde al teclado: <code>inputSeq</code> volvió a 0 y el núcleo rechaza los comandos como <code>duplicate</code>. Debe continuar desde <code>lastCommandSeq</code> del jugador.</li>
+<li><code>deserializeGame</code> solo valida cuatro campos. Un guardado manipulado con forma válida pero mapa alterado pasa: compara el mapa contra el esperado o rechaza <code>mapId</code>/<code>mapVersion</code> distintos.</li>
+<li>F5 recarga la página: necesita <code>preventDefault</code>, y estas teclas no deben pasar por el mapeo de direcciones.</li>
+<li>El HUD tiene un flag privado <code>ended</code> y un <code>overlayMode</code>: tras cargar, muestra el overlay de pausa para que la UI coincida con la sesión.</li>
+<li><code>apps/web</code> consume <code>@boulder-maze/core</code> desde <code>dist/</code>: <code>npm run typecheck</code> falla hasta correr <code>npm run build</code>.</li>
+<li>Si el puerto 5199 está ocupado por otro servidor, los e2e corren contra código viejo y fallan de forma engañosa.</li>
+</ul></details>
+</section>
+<hr>
+<section id="r2">
+<h2>Reto 2 · Niveles generados proceduralmente</h2>
+<p class="meta">Core · 15–25 min · Plan mode, Algoritmo, Tests de propiedades</p>
+<p>Un generador de laberintos que pase el validador. Siempre. Para cualquier semilla.</p>
+<h3>La misión</h3>
+<p>Una función <code>generateMaze(seed, opciones)</code> en el núcleo, <b>100% determinista</b> (nada de <code>Math.random</code> ni <code>Date</code>) que produzca mapas que pasen <code>validateMap</code> para muchas semillas y varios tamaños impares.</p>
+<p>El validador es estricto: sin callejones sin salida, sin bloques de 2×2 caminables, al menos 6 cruces, todo conectado, exactamente una <code>P</code>, al menos una <code>o</code>, y cuatro chutes laterales con su metadata. No tiene que ser un laberinto bonito; tiene que ser <b>válido y jugable</b>.</p>
+<p>Alcance recomendado: solo el núcleo. Si te sobra tiempo, conéctalo a la web con <code>?seed=123</code>.</p>
+<h3>Una ayudita para arrancar</h3>
+<p class="meta">Es solo el comienzo. Escribe tu propio prompt y complétalo con lo que pide la misión.</p>
+<div class="box"><button type="button" class="copy">Copiar</button><pre class="p">Quiero un generador de laberintos por semilla en el núcleo, que siempre pase validateMap (@packages/core/src/validate.ts). Plan mode primero: dime qué estrategia usarías antes de implementar.</pre></div>
+<h3>Lo que tú decides</h3><ul>
+<li>¿Qué estrategia? Retícula de pasillos quitando aristas, simetría espejo u otra. ¿Cómo garantizas cero callejones y conectividad?</li>
+<li>¿Cuántas aristas quitas? Más quitadas = pasillos largos y pocos cruces; menos = más cruces y más ciclos. Fija tu propio mínimo de cruces.</li>
+<li>¿Dónde van la <code>P</code>, las <code>o</code> y los chutes? ¿Se eligen antes o después de quitar aristas?</li>
+<li>¿Qué haces con un tamaño par, o muy chico?</li>
+</ul>
+<h3>¿Cómo sabes que terminó?</h3><ul class="check">
+<li><label><input type="checkbox"><span><code>npm test</code> pasa, con pruebas de propiedades sobre <b>cientos</b> de semillas y al menos tres tamaños.</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm test</pre></div></li>
+<li><label><input type="checkbox"><span>El mismo <code>seed</code> y el mismo tamaño dan siempre exactamente el mismo mapa.</span></label></li>
+<li><label><input type="checkbox"><span>Cada mapa generado pasa <code>validateMap</code>, tiene 4 chutes y 4 super pellets.</span></label></li>
+<li><label><input type="checkbox"><span>Un tamaño par o absurdo se rechaza con un error claro.</span></label></li>
+<li><label><input type="checkbox"><span>Un script imprime el mapa de una semilla y sale con código 1 si no valida (por ejemplo <code>node scripts/generate-maze.mjs 123 19 15</code>).</span></label></li>
+<li><label><input type="checkbox"><span>Las pruebas hacen <code>createGame</code> y avanzan cientos de ticks sin lanzar errores sobre mapas generados.</span></label></li>
+<li><label><input type="checkbox"><span>Si hiciste el cableado a la web: abrir <code>?seed=123</code> muestra un laberinto distinto y se puede jugar completo.</span></label></li>
+</ul>
+<h3>Archivos que vas a ver</h3><p><code>packages/core/src/generate.ts (nuevo)</code> <code>packages/core/src/index.ts</code> <code>packages/core/test/generate.test.ts (nuevo)</code> <code>scripts/generate-maze.mjs (nuevo)</code> <code>apps/web/src/session/LocalGameSession.ts y apps/web/src/main.ts (si cableas la web)</code></p>
+<h3>Si te atoras</h3>
+<details><summary>Pista 1</summary><div>Piensa el mapa como un grafo: los tiles (impar, impar) son nodos, y el tile entre dos nodos vecinos es una arista. Si los tiles (par, par) son siempre pared, ¿qué pasa con la regla de los bloques de 2×2?</div></details>
+<details><summary>Pista 2</summary><div>Quita aristas en orden barajado con el generador del núcleo, pero solo si los dos extremos tienen grado mayor que 2, el grafo sigue conexo y aún quedan suficientes cruces. Las esquinas nunca quedan como callejón.</div></details>
+<details><summary>Pista 3</summary><div>Rasteriza a <code>string[]</code>: <code>#</code> por defecto, <code>.</code> en nodos y aristas vivas, y luego sobrescribe esquinas con <code>o</code>, un nodo de la fila de abajo con <code>P</code> y cuatro nodos de las columnas laterales con <code>e</code>.</div></details>
+<details><summary>Trampas conocidas (al final)</summary><ul>
+<li>Si eliges los chutes <b>después</b> de quitar aristas, hay semillas donde ningún candidato conserva su arista hacia adentro y el generador se queda sin chute. Elígelos antes y protege su arista.</li>
+<li>Un test ingenuo <code>expect(state.tick).toBe(N)</code> falla: la simulación deja de avanzar al llegar a &quot;lost&quot; o &quot;won&quot; (sin input, el jugador pierde en pocos cientos de ticks). Afirma que no lanzó error y que la fase es válida.</li>
+<li>Los chutes reemplazan el pellet del nodo: no hardcodees el total de pellets, usa el conteo de <code>createGame</code>.</li>
+<li>Para jugarlo en la web, <code>LocalGameSession</code> tiene el mapa fijo en el constructor y en <code>restart()</code>, y <code>main.ts</code> dimensiona el canvas con ese mapa. Además, <code>MazeScene</code> solo dibuja bien los chutes del lado oeste y este.</li>
+<li>Después de un <code>npm install</code> limpio, <code>npm run typecheck</code> falla hasta compilar el núcleo (<code>npm run build</code>).</li>
+</ul></details>
+</section>
+<hr>
+<section id="r3">
+<h2>Reto 3 · Dos frentes: efectos de sonido y récord persistente</h2>
+<p class="meta">Paralelo · 20–25 min · Worktree, Paralelo, Quick Review, Merge</p>
+<p>Dos agentes, solo en la web, archivos distintos. Que ninguno pise al otro.</p>
+<h3>La misión</h3>
+<p><b>Sesión A:</b> sonidos de juego con WebAudio, disparados por los eventos del núcleo (pellet, drill, boulder destruido, derrota, victoria). <b>Sesión B:</b> un récord de puntaje que persiste entre partidas y se muestra en el HUD.</p>
+<p>Cada una en su propia sesión <b>Worktree</b>. Cuando terminen, Quick Review de cada diff y luego Merge. Como las dos viven en <code>apps/web</code>, el reto es respetar las fronteras de archivos.</p>
+<h3>Dos sesiones, dos zonas</h3><div class="two">
+<div><b>SESIÓN A · SONIDO</b>Un módulo de audio nuevo, enganchado a los eventos que ya recibe la escena. Sin tocar el HUD.<br><code>apps/web/src/audio.ts</code> <code>apps/web/src/scene/MazeScene.ts</code> <code>apps/web/src/main.ts</code></div>
+<div><b>SESIÓN B · RÉCORD</b>Guardado del mejor puntaje y su visualización en el HUD y en el overlay de fin.<br><code>apps/web/src/storage/highScore.ts</code> <code>apps/web/src/ui/hud.ts</code> <code>apps/web/index.html</code> <code>apps/web/src/styles.css</code></div>
+</div>
+<h3>Una ayudita para arrancar</h3>
+<p class="meta">Es solo el comienzo. Escribe tu propio prompt y complétalo con lo que pide la misión.</p>
+<p><b>Sesión A (Worktree)</b></p>
+<div class="box"><button type="button" class="copy">Copiar</button><pre class="p">Quiero efectos de sonido con WebAudio disparados por los eventos de @apps/web/src/scene/MazeScene.ts. Plan mode primero. No toques el HUD: otra sesión trabaja ahí.</pre></div>
+<p><b>Sesión B (Worktree)</b></p>
+<div class="box"><button type="button" class="copy">Copiar</button><pre class="p">Quiero un récord de puntaje persistente, mostrado en el HUD (@apps/web/src/ui/hud.ts). Plan mode primero. No toques MazeScene ni main.ts: otra sesión trabaja ahí.</pre></div>
+<h3>Lo que tú decides</h3><ul>
+<li>A: ¿Cuándo se crea o reanuda el <code>AudioContext</code>? Tiene que ser a partir de un gesto, como el clic en Start.</li>
+<li>A: ¿Suena algo en pausa? ¿Hay botón o tecla para silenciar?</li>
+<li>B: ¿Se escribe el récord en cada <code>update()</code> o solo al terminar la partida? ¿Contra qué valor comparas?</li>
+<li>B: ¿Qué haces si <code>localStorage</code> falla o tiene un valor corrupto?</li>
+</ul>
+<h3>¿Cómo sabes que terminó?</h3><ul class="check">
+<li><label><input type="checkbox"><span>Cada sesión trabajó en su Worktree y tocó <b>solo</b> sus archivos (<code>git diff --stat</code> en cada una).</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">git diff --stat</pre></div></li>
+<li><label><input type="checkbox"><span>Corriste <code>npm install</code> dentro de cada Worktree antes de probar.</span></label></li>
+<li><label><input type="checkbox"><span>Quick Review de cada diff antes del Merge, sin hallazgos serios sin resolver.</span></label></li>
+<li><label><input type="checkbox"><span>Con sonido: un pellet, una super pellet y un boulder destruido suenan distinto; en pausa no suena nada.</span></label></li>
+<li><label><input type="checkbox"><span>Con récord: termina una partida, recarga la página y el récord sigue ahí; superarlo muestra &quot;Nuevo récord&quot; una sola vez.</span></label></li>
+<li><label><input type="checkbox"><span>Después del Merge: <code>npm test</code>, <code>npm run typecheck</code> y los e2e pasan (corre los e2e de uno en uno).</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm test &amp;&amp; npm run build &amp;&amp; npm run typecheck &amp;&amp; npm run test:e2e</pre></div></li>
+</ul>
+<h3>Si te atoras</h3>
+<details><summary>Pista 1</summary><div>El gancho natural del sonido es <code>MazeScene.onEvent</code>: ahí ya llegan todos los eventos del núcleo.</div></details>
+<details><summary>Pista 2</summary><div>El HUD marca el fin de partida una sola vez con el flag <code>ended</code>. Ese es el momento de leer y escribir el récord.</div></details>
+<details><summary>Pista 3</summary><div>Los sonidos son osciladores cortos: una frecuencia, una envolvente y listo. No necesitas archivos.</div></details>
+<details><summary>Trampas conocidas (al final)</summary><ul>
+<li>Un <code>AudioContext</code> creado sin gesto del usuario queda suspendido y no suena. Créalo o reanúdalo en el clic de Start.</li>
+<li>Si guardas el récord en cada <code>update()</code>, lo reescribes 60 veces por segundo y cuentas mal el &quot;nuevo récord&quot; (compáralo contra el valor <b>anterior</b>).</li>
+<li>Un Worktree no trae <code>node_modules</code>: sin <code>npm install</code> ahí, nada corre.</li>
+<li>Los e2e usan el puerto 5199 con servidor reusable: si corren a la vez, una sesión prueba el código de la otra.</li>
+</ul></details>
+</section>
+<hr>
+<section id="r4">
+<h2>Reto 4 · Jefe: modo cooperativo local, dos jugadores en el mismo teclado</h2>
+<p class="meta">Jefe · 25–35 min · Megaplan, Core + web, Reglas de juego</p>
+<p>Dos triángulos, un laberinto, cuatro boulders. Sin red: todo corre en el mismo navegador.</p>
+<h3>La misión</h3>
+<p>Dos personas comparten el laberinto y los pellets. Cada una tiene su triángulo, su puntaje y su drill. Los boulders tienen que comportarse con sentido cuando hay dos jugadores.</p>
+<p><b>Nivel 1 (obligatorio):</b> reglas en el núcleo y pruebas de Vitest. <b>Nivel 2:</b> web, con P1 en flechas, P2 en WASD, dos colores, dos marcadores y una forma de elegir 1 o 2 jugadores. Terminar el Nivel 1 ya es un buen resultado.</p>
+<p>El modo de un jugador debe comportarse <b>exactamente igual</b> que hoy.</p>
+<h3>Una ayudita para arrancar</h3>
+<p class="meta">Es solo el comienzo. Escribe tu propio prompt y complétalo con lo que pide la misión.</p>
+<div class="box"><button type="button" class="copy">Copiar</button><pre class="p">Quiero un modo cooperativo local para 2 jugadores en el mismo teclado. Empieza por el núcleo (@packages/core/src/sim.ts). Pide un megaplan y dime las decisiones abiertas antes de implementar.</pre></div>
+<h3>Lo que tú decides</h3><ul>
+<li><b>Spawn del 2º jugador:</b> derivarlo del primero (por ejemplo, rotación de 180°) o agregar un tile nuevo al mapa (que obliga a tocar <code>validate.ts</code>, <code>map.ts</code> y <code>mapData.ts</code>).</li>
+<li><b>A quién persiguen los boulders:</b> ¿al más cercano? ¿al que va ganando? ¿se reparten? Si hay empate, ¿quién gana?</li>
+<li><b>¿Qué significa &quot;powered&quot; con dos jugadores?</b> ¿Huyen solo del que tiene drill, o de cualquiera?</li>
+<li><b>Derrota:</b> ¿compartida (cualquier contacto termina para todos) o por jugador con espectador?</li>
+<li><b>Contacto simultáneo:</b> si P1 sin drill y P2 con drill tocan al mismo boulder en el mismo tick, ¿quién muere?</li>
+<li><b>Puntaje y victoria:</b> ¿a quién se le acredita la victoria? ¿Qué pasa con el pellet bajo el spawn del 2º jugador?</li>
+</ul>
+<h3>¿Cómo sabes que terminó?</h3><ul class="check">
+<li><label><input type="checkbox"><span><code>npm test</code>: los 55 tests originales siguen verdes y hay pruebas nuevas para cada regla (spawn, objetivo del boulder, powered, victoria, derrota, contacto simultáneo).</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm test</pre></div></li>
+<li><label><input type="checkbox"><span><code>npm run validate</code> sigue pasando sin cambiar el mapa.</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm run validate</pre></div></li>
+<li><label><input type="checkbox"><span><code>npm run smoke</code> imprime exactamente lo mismo que antes del cambio (un jugador no cambió).</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm run smoke</pre></div></li>
+<li><label><input type="checkbox"><span>Hay un test de determinismo con dos jugadores: mismos comandos, mismo estado.</span></label></li>
+<li><label><input type="checkbox"><span><code>npm run build</code> y luego <code>npm run typecheck</code> pasan sin errores.</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm run build &amp;&amp; npm run typecheck</pre></div></li>
+<li><label><input type="checkbox"><span>Nivel 2: P1 se mueve con flechas, P2 con WASD, y el HUD muestra dos marcadores y dos medidores de drill.</span></label></li>
+<li><label><input type="checkbox"><span>Nivel 2: los 6 tests e2e originales siguen verdes y hay uno nuevo para el modo de dos jugadores.</span></label><div class="box"><button type="button" class="copy">Copiar</button><pre class="">npm run test:e2e</pre></div></li>
+</ul>
+<h3>Archivos que vas a ver</h3><p><code>packages/core/src/sim.ts</code> <code>packages/core/src/map.ts</code> <code>packages/core/test/helpers.ts</code> <code>packages/core/test/coop.test.ts (nuevo)</code> <code>apps/web/src/session/LocalGameSession.ts</code> <code>apps/web/src/input.ts</code> <code>apps/web/src/ui/hud.ts</code> <code>apps/web/src/scene/MazeScene.ts</code></p>
+<h3>Si te atoras</h3>
+<details><summary>Pista 1</summary><div>Empieza por el núcleo, no por la pantalla. Lo que asume un solo jugador son unos pocos lugares concretos de <code>sim.ts</code>: el spawn, el objetivo de los boulders, el estado &quot;powered&quot; y la victoria.</div></details>
+<details><summary>Pista 2</summary><div><code>validateMap</code> exige exactamente una <code>P</code>, así que no agregues otra al mapa: deriva el segundo spawn del primero con una función pura en <code>map.ts</code>.</div></details>
+<details><summary>Pista 3</summary><div><code>createGame</code> puede recibir un número de jugadores opcional (por omisión 1). Para los boulders, calcula un campo de distancias por jugador al inicio de cada tick.</div></details>
+<details><summary>Trampas conocidas (al final)</summary><ul>
+<li>El spawn rotado cae sobre un tile que tiene pellet. Si no lo quitas, <code>pelletsRemaining</code> queda inconsistente y el 2º jugador cobra un pellet gratis en el primer tick.</li>
+<li>El bucle de contactos original itera jugadores por id y se detiene en la primera derrota: con P1 sin drill y P2 con drill sobre el mismo boulder, P1 muere solo por ir primero. Resuélvelo en dos pasadas: primero destruyen los que tienen drill, luego mata el contacto.</li>
+<li><code>validateMap</code> rechaza cualquier carácter nuevo en el mapa; agregar una <code>Q</code> de spawn obliga a tocar tres archivos.</li>
+<li>Los helpers de test asumen un jugador: escribe helpers nuevos en vez de cambiar los viejos y romper 55 tests.</li>
+<li><code>npm run typecheck</code> en un checkout limpio falla hasta correr <code>npm run build</code>.</li>
+</ul></details>
+</section>
+<hr><p class="note">Repo: <code>boulder-maze</code>. Los documentos de referencia están en <code>docs/</code>: <code>ARCHITECTURE.md</code>, <code>GAME_RULES.md</code> y <code>MULTIPLAYER_EXTENSION.md</code>.</p>
+</main><script>
+[].forEach.call(document.querySelectorAll('.copy'),function(b){
+  b.addEventListener('click',function(){
+    var pre=b.parentNode.querySelector('pre'),t=pre.innerText.replace(/\n+$/,'');
+    function ok(){b.textContent='Copiado';setTimeout(function(){b.textContent='Copiar'},1200)}
+    function fb(){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');ok()}catch(e){}}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(ok,fb)}else{fb()}
+  });
+});
+</script></body></html>
